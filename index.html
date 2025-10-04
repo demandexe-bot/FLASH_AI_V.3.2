@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flash AI ⚡ مساعدك الشخصي الفائق</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <style>
+        :root {
+            --body-bg: #0d1117;
+            --text-color-light: #e6edf3;
+            --text-color-dark: #1f2328;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --user-msg-bg: #007aff;
+            --bot-msg-bg: #ffffff;
+            --error-color: #ff9f43;
+            --font-family: 'Tajawal', sans-serif;
+            --border-radius: 24px;
+            --code-bg: #161b22;
+            --app-height: 100vh;
+            --theme-transition-duration: 4s;
+            --gradient-start: #8e2de2;
+            --gradient-end: #4a00e0;
+            --aurora-1: #4a00e0;
+            --aurora-2: #8e2de2;
+            --aurora-3: #007aff;
+            --aurora-4: #00c6ff;
+            --pulse-glow-color: #8e2de2;
+        }
+        body.pro-mode {
+            --gradient-start: #ff4800;
+            --gradient-end: #ff416c;
+            --aurora-1: #d32f2f;
+            --aurora-2: #ff4b2b;
+            --aurora-3: #ff416c;
+            --aurora-4: #f89b29;
+            --pulse-glow-color: #ff4800;
+        }
+        body.deep-think-mode {
+            --gradient-start: #FFD700;
+            --gradient-end: #FDB813;
+            --aurora-1: #1a1a1a;
+            --aurora-2: #FFD700;
+            --aurora-3: #4d4d4d;
+            --aurora-4: #f9a825;
+            --pulse-glow-color: #FFD700;
+        }
+        body {
+            font-family: var(--font-family); background: var(--body-bg); margin: 0;
+            display: grid; place-items: center; height: var(--app-height); padding: 1rem;
+            overflow: hidden; position: relative;
+        }
+        body::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, var(--aurora-1), var(--aurora-2), var(--aurora-3), var(--aurora-4));
+            background-size: 400% 400%; animation: aurora 15s ease infinite;
+            filter: blur(100px); z-index: -1;
+            transition: background var(--theme-transition-duration) ease-in-out;
+        }
+        @keyframes aurora { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
+        .chatbot-container {
+            width: 650px; max-width: 100%; height: 90vh; max-height: 850px;
+            display: flex; flex-direction: column;
+            background-color: rgba(22, 27, 34, 0.75); backdrop-filter: blur(25px);
+            border-radius: var(--border-radius); border: 1px solid var(--border-color);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255,255,255,0.1);
+            overflow: hidden;
+            animation: container-fade-in 0.8s 0.2s cubic-bezier(0.25, 1, 0.5, 1) backwards;
+        }
+        .bot-message.is-pulsing .avatar {
+            border-color: var(--pulse-glow-color);
+            animation: avatar-pulse 2s infinite;
+            transition: border-color var(--theme-transition-duration) ease;
+        }
+        @keyframes avatar-pulse {
+            0%, 100% { box-shadow: 0 0 15px 0px var(--pulse-glow-color); }
+            50% { box-shadow: 0 0 25px 5px var(--pulse-glow-color); }
+        }
+        @keyframes container-fade-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes slide-fade-down { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        .chatbot-header {
+            padding: 1rem 1.5rem; display: flex;
+            justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            user-select: none; gap: 1rem; flex-shrink: 0;
+        }
+        .chatbot-header > * { animation: slide-fade-down 0.6s cubic-bezier(0.25, 1, 0.5, 1) backwards; }
+        #clearChat { animation-delay: 0.2s; }
+        .mode-selector-wrapper { animation-delay: 0.3s; }
+        .chatbot-header h2 { animation-delay: 0.4s; }
+        .chatbot-header h2 { margin: 0; font-size: 1.7rem; font-weight: 800; letter-spacing: 2px; white-space: nowrap; }
+        .gradient-text {
+            background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
+            background-clip: text; -webkit-background-clip: text; color: transparent;
+            transition: background var(--theme-transition-duration) ease-in-out;
+        }
+        #clearChat { background: none; border: none; cursor: pointer; color: white; opacity: 0.7; transition: opacity 0.2s, transform 0.2s; padding: 0.5rem; }
+        #clearChat:hover { opacity: 1; transform: rotate(15deg) scale(1.1); }
+        #clearChat svg { width: 24px; height: 24px; }
+        .mode-selector-wrapper { flex-shrink: 0; }
+        .mode-selector {
+            background-color: rgba(255, 255, 255, 0.1); color: var(--text-color-light);
+            border: 1px solid var(--border-color); border-radius: 8px;
+            padding: 0.5rem 0.75rem; font-family: var(--font-family);
+            font-size: 0.9rem; cursor: pointer; outline: none; transition: all 0.2s ease;
+        }
+        .mode-selector:hover { border-color: rgba(255, 255, 255, 0.3); }
+        .mode-selector option { background-color: #2c3038; color: var(--text-color-light); }
+        .chatbot-messages { flex: 1; padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1rem; }
+        @keyframes message-fade-in { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .message { display: flex; align-items: flex-start; gap: 0.75rem; max-width: 85%; animation: message-fade-in 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards; }
+        .message-content { padding: 0.75rem 1.25rem; border-radius: 1.25rem; line-height: 1.7; word-wrap: break-word; font-weight: 500; position: relative; }
+        .avatar { width: 42px; height: 42px; border-radius: 50%; flex-shrink: 0; border: 2px solid rgba(255,255,255,0.2); box-shadow: 0 2px 5px rgba(0,0,0,0.2); position: relative; transition: border-color var(--theme-transition-duration) ease, box-shadow var(--theme-transition-duration) ease; }
+        .avatar-icon { width: 100%; height: 100%; border-radius: 50%; display: grid; place-items: center; }
+        .avatar-icon svg { width: 60%; height: 60%; }
+        .message-content::after { content: ''; position: absolute; bottom: 0; width: 0; height: 0; border: 15px solid transparent; }
+        .user-message { align-self: flex-start; flex-direction: row-reverse; }
+        .user-message .message-content { background: var(--user-msg-bg); color: var(--text-color-light); border-bottom-left-radius: 0.5rem; }
+        .user-message .message-content::after { right: -12px; border-left-color: var(--user-msg-bg); border-right: 0; border-bottom: 0; }
+        .user-message .avatar-icon { background-color: #a0a0a0; }
+        .bot-message { align-self: flex-end; }
+        .bot-message .message-content { background: var(--bot-msg-bg); color: var(--text-color-dark); border-bottom-right-radius: 0.5rem; }
+        .bot-message .message-content::after { left: -12px; border-right-color: var(--bot-msg-bg); border-left: 0; border-bottom: 0; }
+        .bot-message .avatar-icon {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            transition: background var(--theme-transition-duration) ease-in-out;
+        }
+        .typing-indicator { display: inline-block; }
+        .typing-indicator span { display: inline-block; width: 4px; height: 4px; background-color: var(--text-color-dark); border-radius: 50%; margin: 0 1px; animation: bounce 1.2s infinite ease-in-out; }
+        .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+        .typing-indicator span:nth-child(3) { animation-delay: -0.32s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
+        .chatbot-input-container { padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); flex-shrink: 0; }
+        .chatbot-input { display: flex; align-items: center; background-color: rgba(0,0,0,0.2); border-radius: 2rem; padding: 0.5rem; border: 1px solid var(--border-color); transition: border-color 0.3s, box-shadow 0.3s; }
+        .chatbot-input:focus-within {
+             border-color: var(--gradient-start); 
+             box-shadow: 0 0 0 4px color-mix(in srgb, var(--gradient-start) 25%, transparent); 
+        }
+        #userInput { flex: 1; border: none; outline: none; padding: 0.75rem; font-size: 1rem; font-family: var(--font-family); background: transparent; color: var(--text-color-light); }
+        #sendButton, #stopButton { background: #007aff; border: none; cursor: pointer; width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; transition: all 0.2s; flex-shrink: 0; }
+        #sendButton:hover, #stopButton:hover { filter: brightness(1.2); transform: translateY(-2px); }
+        #sendButton:active, #stopButton:active { transform: scale(0.9); filter: brightness(1); }
+        #sendButton svg, #stopButton svg { width: 24px; height: 24px; fill: var(--text-color-light); }
+        #stopButton { background: #ff453a; }
+        .hidden { display: none !important; }
+        .code-block-container { background-color: var(--code-bg); border-radius: 8px; margin: 1rem 0; overflow: hidden; border: 1px solid var(--border-color); }
+        .code-block-header { display: flex; justify-content: space-between; align-items: center; background-color: rgba(255, 255, 255, 0.05); padding: 0.5rem 1rem; }
+        .language-name { font-size: 0.9rem; font-weight: 500; color: #a5a5a5; text-transform: capitalize; }
+        .copy-code-button { background: none; border: none; color: #a5a5a5; cursor: pointer; padding: 0.3rem; border-radius: 5px; display: flex; align-items: center; transition: color 0.2s, background-color 0.2s; }
+        .copy-code-button:hover { color: white; background-color: rgba(255, 255, 255, 0.1); }
+        .copy-code-button svg { width: 18px; height: 18px; }
+        .copy-code-button .copy-feedback { font-size: 0.85rem; margin-right: 0.5rem; }
+        .message-content pre, .message-content code { direction: ltr; text-align: left; }
+        .message-content pre { margin: 0; background: transparent !important; padding: 1rem; }
+        .upload-btn {
+            background: none; border: none; cursor: pointer; padding: 0.5rem;
+            display: grid; place-items: center; transition: all 0.2s;
+            flex-shrink: 0; margin-right: 8px;
+        }
+        .upload-btn:hover { transform: scale(1.1); }
+        .upload-btn svg { width: 24px; height: 24px; fill: var(--text-color-light); opacity: 0.7; }
+        .upload-btn:hover svg { opacity: 1; }
+        .file-preview-container { padding: 0.5rem 1.5rem 0; background-color: rgba(22, 27, 34, 0.75); }
+        .file-preview-item {
+            display: inline-flex; align-items: center;
+            background-color: rgba(255, 255, 255, 0.1); color: var(--text-color-light);
+            padding: 5px 10px; border-radius: 16px; font-size: 0.9rem;
+        }
+        .file-preview-item span { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .remove-file-button {
+            background: #555; color: white; border: none; border-radius: 50%;
+            width: 20px; height: 20px; display: grid; place-items: center;
+            cursor: pointer; font-weight: bold; font-size: 14px; margin-right: 8px;
+        }
+        .remove-file-button:hover { background: #ff453a; }
+        .user-image { max-width: 100%; border-radius: 8px; margin-bottom: 10px; }
+        .attachment-chip {
+            display: flex; align-items: center;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 5px 10px; border-radius: 8px; margin-bottom: 8px;
+        }
+        .attachment-chip svg { width: 16px; height: 16px; margin-left: 8px; fill: white; }
+        @media (max-width: 768px) {
+            body { padding: 0; }
+            .chatbot-container { width: 100%; height: var(--app-height); max-height: none; border-radius: 0; border: none; }
+            .chatbot-header { padding: 0.75rem 1rem; gap: 0.5rem; }
+            .chatbot-header h2 { font-size: 1.4rem; }
+            .mode-selector { padding: 0.4rem 0.5rem; font-size: 0.8rem; }
+            .chatbot-messages { padding: 1rem; }
+            .message { max-width: 90%; }
+            .chatbot-input-container { padding: 0.5rem; }
+            .chatbot-input { padding: 0.25rem; }
+            #userInput { padding: 0.6rem; }
+            #sendButton, #stopButton { width: 44px; height: 44px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chatbot-container" id="chatbotContainer">
+        <div class="chatbot-header">
+            <button id="clearChat" title="مسح المحادثة"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
+            <div class="mode-selector-wrapper">
+                <select id="modeSelector" class="mode-selector">
+                    <option value="none">Flash Coder</option>
+                    <option value="deep-think">Flash Nerd</option>
+                    <option value="pro">Flash Giga</option>
+                </select>
+            </div>
+            <h2 class="gradient-text">⚡ F L A S H</h2>
+        </div>
+        <div class="chatbot-messages" id="chatbotMessages"></div>
+        <div id="filePreviewContainer" class="file-preview-container hidden"></div>
+        <div class="chatbot-input-container">
+            <div class="chatbot-input" id="inputWrapper">
+                <button id="uploadTextFileButton" class="upload-btn" title="رفع ملف نصي"><svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24"><path fill="currentColor" d="M440-200h80v-167l64 64 56-57-160-160-160 160 57 56 63-63v167ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"/></svg></button>
+                <input type="file" id="textFile" accept=".txt,.js,.py,.html,.css,.json,.csv,.md" class="hidden">
+                <button id="uploadImageButton" class="upload-btn" title="رفع صورة"><svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M0 0h24v24H0V0z" fill="none"/><path fill="currentColor" d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/></svg></button>
+                <input type="file" id="imageFile" accept="image/*" class="hidden">
+                <input type="text" id="userInput" placeholder="اسأل Flash أي شيء..." autocomplete="off">
+                <button id="sendButton" title="إرسال"><svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
+                <button id="stopButton" title="إيقاف التوليد" class="hidden"><svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 0 24 24" width="24"><path d="M6 6h12v12H6z"/></svg></button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            // --- 1. DOM Element Connections ---
+            const chatbotContainer = document.getElementById("chatbotContainer");
+            const chatbotMessages = document.getElementById("chatbotMessages");
+            const userInput = document.getElementById("userInput");
+            const sendButton = document.getElementById("sendButton");
+            const stopButton = document.getElementById("stopButton");
+            const clearChatButton = document.getElementById("clearChat");
+            const modeSelector = document.getElementById("modeSelector");
+            const uploadImageButton = document.getElementById("uploadImageButton");
+            const imageFileInput = document.getElementById("imageFile");
+            const uploadTextFileButton = document.getElementById("uploadTextFileButton");
+            const textFileInput = document.getElementById("textFile");
+            const filePreviewContainer = document.getElementById("filePreviewContainer");
+
+            // --- 2. API & Model Configuration ---
+            const API_KEY = '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';
+            const API_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
+            const MODELS = {
+                'none':       { name: 'qwen/qwen-2.5-coder-32b-instruct:free', supportsVision: false },
+                'deep-think': { name: 'deepseek/deepseek-chat-v3.1:free',          supportsVision: false },
+                'pro':        { name: 'z-ai/glm-4.5-air:free',         supportsVision: true }
+            };
+            
+            // --- 3. State Management & Constants ---
+            let conversationHistory = [];
+            let abortController;
+            let uploadedImage = null;
+            let uploadedTextFile = null;
+            const USER_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#ffffff"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>`;
+            const BOT_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>`;
+            const COPY_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>`;
+
+            // --- 4. System Instructions for AI Modes ---
+            const systemInstruction = { role: 'system', content: `You are Flash Coder, a fast and helpful AI coder. Your primary goal is to assist with code, but you can answer general questions too.` };
+            const deepThinkInstruction = { role: 'system', content: `(DEEP THINK / NERD MODE): You are Flash Nerd. Your task is to provide an exceptionally detailed and analytical response. Structure your answers with bullet points, break down complex topics, and explain the 'why' behind your answers.` };
+            const proInstruction = { role: 'system', content: `(PRO / GIGA MODE): You are Flash Giga, a powerful multimodal AI. You are a senior-level expert consultant. Your tone is professional and authoritative. Provide expert-level, actionable advice and strategic insights.` };
+
+            // --- 5. Core Application Functions ---
+            const setAppHeight = () => { document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`); };
+            
+            marked.setOptions({
+                highlight: (code, lang) => {
+                    const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+                    return hljs.highlight(code, { language }).value;
+                }
+            });
+
+            const startNewConversation = (isModeChange = false) => {
+                if (abortController) abortController.abort();
+                conversationHistory = [];
+                chatbotMessages.innerHTML = '';
+                if (!isModeChange) {
+                    modeSelector.value = 'none';
+                }
+                handleModeChange({ target: modeSelector });
+                clearAllFileUploads();
+                toggleButtons(false);
+                setTimeout(() => {
+                    const personaName = modeSelector.selectedOptions[0].text;
+                    const welcomeText = isModeChange 
+                        ? `أهلاً بك! لقد بدأت محادثة جديدة مع **${personaName}**.`
+                        : "أهلاً بك! أنا ⚡ **Flash**. اختر شخصية المساعد من القائمة في الأعلى.";
+                    appendMessage("bot", welcomeText, { isPulsing: modeSelector.value !== 'none' });
+                }, 300);
+            };
+
+            const appendMessage = (sender, text = "", options = {}) => {
+                const messageContainer = document.createElement("div");
+                messageContainer.classList.add("message", `${sender}-message`);
+                if (sender === 'bot' && options.isPulsing) {
+                    messageContainer.classList.add('is-pulsing');
+                }
+                const avatar = document.createElement('div');
+                avatar.className = 'avatar';
+                const avatarIcon = document.createElement('div');
+                avatarIcon.className = 'avatar-icon';
+                avatarIcon.innerHTML = sender === 'user' ? USER_SVG : BOT_SVG;
+                avatar.appendChild(avatarIcon);
+                
+                const messageContent = document.createElement("div");
+                messageContent.classList.add("message-content");
+                if (options.isError) { messageContent.style.color = 'var(--error-color)'; }
+                
+                if (sender === 'user' && options.fileData) {
+                    const img = document.createElement('img');
+                    img.src = options.fileData.base64;
+                    img.classList.add('user-image');
+                    messageContent.prepend(img);
+                }
+                
+                const textNode = document.createElement('div');
+                textNode.innerHTML = marked.parse(text);
+                messageContent.appendChild(textNode);
+                
+                if (sender === 'user') { messageContainer.appendChild(messageContent); messageContainer.appendChild(avatar); } 
+                else { messageContainer.appendChild(avatar); messageContainer.appendChild(messageContent); }
+                
+                chatbotMessages.appendChild(messageContainer);
+                return messageContainer;
+            };
+            
+            const enhanceCodeBlocks = (container) => {
+                container.querySelectorAll('pre:not(.enhanced)').forEach(preElement => {
+                    preElement.classList.add('enhanced');
+                    const codeElement = preElement.querySelector('code');
+                    if (!codeElement) return;
+
+                    hljs.highlightElement(codeElement);
+
+                    const containerDiv = document.createElement('div');
+                    containerDiv.className = 'code-block-container';
+                    const headerDiv = document.createElement('div');
+                    headerDiv.className = 'code-block-header';
+                    const langClass = Array.from(codeElement.classList).find(c => c.startsWith('language-')) || '';
+                    const langName = langClass.replace('language-', '') || 'code';
+                    const langSpan = document.createElement('span');
+                    langSpan.className = 'language-name';
+                    langSpan.textContent = langName;
+                    const button = document.createElement('button');
+                    button.className = 'copy-code-button';
+                    button.title = 'نسخ الكود';
+                    button.innerHTML = `<span class="copy-feedback"></span>${COPY_SVG}`;
+                    button.addEventListener('click', () => {
+                        const codeToCopy = codeElement.innerText;
+                        const feedback = button.querySelector('.copy-feedback');
+                        navigator.clipboard.writeText(codeToCopy).then(() => {
+                            feedback.textContent = 'تم النسخ!';
+                        }).catch(() => {
+                            feedback.textContent = 'فشل النسخ';
+                        }).finally(() => { setTimeout(() => { feedback.textContent = ''; }, 2000); });
+                    });
+                    headerDiv.appendChild(langSpan);
+                    headerDiv.appendChild(button);
+                    preElement.parentNode.replaceChild(containerDiv, preElement);
+                    containerDiv.appendChild(headerDiv);
+                    containerDiv.appendChild(preElement);
+                });
+            };
+
+            const scrollToBottom = () => { chatbotMessages.scrollTop = chatbotMessages.scrollHeight; };
+            
+            const toggleButtons = (isGenerating) => {
+                sendButton.classList.toggle('hidden', isGenerating);
+                stopButton.classList.toggle('hidden', !isGenerating);
+                userInput.disabled = isGenerating;
+                userInput.placeholder = isGenerating ? "Flash يفكر..." : "اسأل Flash أي شيء...";
+                if (!isGenerating) { userInput.focus(); }
+            };
+
+            const handleImageUpload = () => { imageFileInput.click(); };
+            const handleTextFileUpload = () => { textFileInput.click(); };
+            const handleFileSelection = (event, fileType) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                clearAllFileUploads();
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    if (fileType === 'image') {
+                        uploadedImage = { base64: e.target.result, name: file.name };
+                    } else {
+                        uploadedTextFile = { content: e.target.result, name: file.name };
+                    }
+                    displayTextFilePreview(file.name);
+                };
+                if (fileType === 'image') reader.readAsDataURL(file);
+                else reader.readAsText(file);
+            };
+            const displayTextFilePreview = (name) => {
+                filePreviewContainer.classList.remove('hidden');
+                filePreviewContainer.innerHTML = `<div class="file-preview-item"><span>${name}</span><button class="remove-file-button" onclick="clearAllFileUploads()">×</button></div>`;
+            };
+            window.clearAllFileUploads = () => {
+                uploadedImage = null;
+                uploadedTextFile = null;
+                imageFileInput.value = '';
+                textFileInput.value = '';
+                filePreviewContainer.innerHTML = '';
+                filePreviewContainer.classList.add('hidden');
+            };
+
+            const handleSendMessage = async () => {
+                const messageText = userInput.value.trim();
+                const imageToSend = uploadedImage;
+                const textFileToSend = uploadedTextFile;
+                if (messageText === "" && !imageToSend && !textFileToSend) return;
+
+                const currentMode = modeSelector.value;
+                const modelConfig = MODELS[currentMode];
+
+                if (imageToSend && !modelConfig.supportsVision) {
+                    appendMessage("bot", "عذرًا، هذا الوضع لا يدعم تحليل الصور. يرجى التبديل إلى وضع **Flash Giga** لتجربة هذه الميزة.", { isError: true });
+                    clearAllFileUploads();
+                    return;
+                }
+                
+                appendMessage("user", messageText, { fileData: imageToSend });
+                userInput.value = ""; 
+                clearAllFileUploads();
+                toggleButtons(true);
+                
+                const userMessageForAPI = { role: 'user' };
+                let content = [];
+                
+                if (textFileToSend) {
+                    const fullPrompt = `Based on the content of the file named "${textFileToSend.name}" provided below, please answer my question.\n\n### File Content:\n---\n${textFileToSend.content}\n---\n\n### My Question:\n${messageText || "Please analyze and describe the content of the attached file."}`;
+                    content.push({ type: 'text', text: fullPrompt });
+                } else {
+                    if (messageText) content.push({ type: 'text', text: messageText });
+                }
+                
+                if (imageToSend && modelConfig.supportsVision) {
+                    content.push({ type: 'image_url', image_url: { url: imageToSend.base64 } });
+                }
+                userMessageForAPI.content = content;
+                
+                let tempHistory = [];
+                if (currentMode === 'none') tempHistory.push(systemInstruction);
+                else if (currentMode === 'deep-think') tempHistory.push(deepThinkInstruction);
+                else if (currentMode === 'pro') tempHistory.push(proInstruction);
+                
+                conversationHistory.forEach(msg => tempHistory.push(msg));
+                tempHistory.push(userMessageForAPI);
+
+                const botMessageElement = appendMessage("bot", "", { isPulsing: true });
+                abortController = new AbortController();
+
+                try {
+                    const response = await fetch(API_ENDPOINT, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${API_KEY}`, 'HTTP-Referer': `https://${window.location.hostname}/`, 'X-Title': 'Flash AI' },
+                        body: JSON.stringify({ model: modelConfig.name, messages: tempHistory, stream: true }),
+                        signal: abortController.signal
+                    });
+
+                    if (!response.ok) throw new Error((await response.json())?.error?.message || "فشل الاتصال بالخادم.");
+                    
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    let fullResponse = "";
+                    while (true) {
+                        const { value, done } = await reader.read();
+                        if (done) break;
+                        const chunk = decoder.decode(value, { stream: true });
+                        const lines = chunk.split('\n');
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                const data = line.substring(6);
+                                if (data.trim() === '[DONE]') break;
+                                try {
+                                    const jsonChunk = JSON.parse(data);
+                                    const textPart = jsonChunk.choices[0].delta.content;
+                                    if (textPart) {
+                                        fullResponse += textPart;
+                                        botMessageElement.querySelector('.message-content').innerHTML = marked.parse(fullResponse + "...");
+                                    }
+                                } catch (e) { /* Ignore */ }
+                            }
+                        }
+                    }
+                    
+                    const finalHtml = marked.parse(fullResponse);
+                    botMessageElement.querySelector('.message-content').innerHTML = finalHtml;
+                    enhanceCodeBlocks(botMessageElement.querySelector('.message-content'));
+                    
+                    let historyEntry = { role: 'user' };
+                    if(textFileToSend) {
+                        historyEntry.content = `(Analyzed file: ${textFileToSend.name}) ${messageText}`;
+                    } else if(imageToSend) {
+                        historyEntry.content = `(Analyzed image: ${imageToSend.name}) ${messageText}`;
+                    } else {
+                        historyEntry.content = messageText;
+                    }
+                    conversationHistory.push(historyEntry);
+                    conversationHistory.push({ role: 'assistant', content: fullResponse });
+
+                } catch (error) {
+                    const isAbort = error.name === 'AbortError';
+                    const errorMessage = isAbort ? "تم إيقاف التوليد." : `خطأ: ${error.message}`;
+                    botMessageElement.querySelector('.message-content').innerHTML = marked.parse(isAbort ? fullResponse.trim() + `\n\n<small>${errorMessage}</small>` : errorMessage);
+                    if(!isAbort) botMessageElement.querySelector('.message-content').style.color = 'var(--error-color)';
+                } finally {
+                    toggleButtons(false);
+                }
+            };
+            
+            const handleModeChange = (event) => {
+                const selectedMode = event.target.value;
+                document.body.classList.remove('pro-mode', 'deep-think-mode');
+                
+                if (selectedMode === 'pro') document.body.classList.add('pro-mode'); 
+                else if (selectedMode === 'deep-think') document.body.classList.add('deep-think-mode');
+                
+                const modelSupportsVision = MODELS[selectedMode].supportsVision;
+                uploadImageButton.style.display = modelSupportsVision ? 'grid' : 'none';
+                clearAllFileUploads();
+            };
+
+            window.addEventListener('resize', setAppHeight);
+            modeSelector.addEventListener('change', () => startNewConversation(true));
+            clearChatButton.addEventListener("click", () => startNewConversation(false));
+            sendButton.addEventListener("click", handleSendMessage);
+            userInput.addEventListener("keypress", (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSendMessage(); } });
+            stopButton.addEventListener("click", () => { if (abortController) abortController.abort(); });
+            uploadImageButton.addEventListener('click', handleImageUpload);
+            imageFileInput.addEventListener('change', (e) => handleFileSelection(e, 'image'));
+            uploadTextFileButton.addEventListener('click', handleTextFileUpload);
+            textFileInput.addEventListener('change', (e) => handleFileSelection(e, 'text'));
+            
+            startNewConversation(false);
+        });
+    </script>
+</body>
+</html>
