@@ -69,8 +69,13 @@
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
+        
+        /* ▼▼▼ [ التعديل هنا ] ▼▼▼ */
         .chatbot-container {
-            width: 650px; max-width: 100%; height: 90vh; max-height: 850px;
+            width: 800px; /* زيادة العرض */
+            max-width: 100%; 
+            height: 90vh; 
+            max-height: 900px; /* زيادة الارتفاع */
             display: flex; flex-direction: column;
             background-color: rgba(22, 27, 34, 0.75); backdrop-filter: blur(25px);
             border-radius: var(--border-radius); border: 1px solid var(--border-color);
@@ -94,12 +99,26 @@
             justify-content: space-between; align-items: center;
             border-bottom: 1px solid var(--border-color);
             user-select: none; gap: 1rem; flex-shrink: 0;
+            overflow: hidden;
         }
         .chatbot-header > * { animation: slide-fade-down 0.6s cubic-bezier(0.25, 1, 0.5, 1) backwards; }
         #clearChat { animation-delay: 0.2s; }
         .mode-selector-wrapper { animation-delay: 0.3s; }
-        .chatbot-header h2 { animation-delay: 0.4s; }
-        .chatbot-header h2 { margin: 0; font-size: 1.7rem; font-weight: 800; letter-spacing: 2px; white-space: nowrap; }
+        .header-title-wrapper { animation-delay: 0.4s; }
+        .header-title-wrapper {
+            position: relative;
+            height: 32px;
+            display: flex;
+            align-items: center;
+        }
+        #headerTitle {
+            margin: 0; font-size: 1.7rem; font-weight: 800; letter-spacing: 2px; white-space: nowrap;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        #headerTitle.is-changing {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
         .gradient-text {
             background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end));
             background-clip: text; -webkit-background-clip: text; color: transparent;
@@ -192,10 +211,12 @@
         }
         .attachment-chip svg { width: 16px; height: 16px; margin-left: 8px; fill: white; }
         @media (max-width: 768px) {
-            body { padding: 0; }
-            .chatbot-container { width: 100%; height: var(--app-height); max-height: none; border-radius: 0; border: none; }
+            .chatbot-container {
+                width: 100%; height: var(--app-height); max-height: none; border-radius: 0; border: none;
+            }
             .chatbot-header { padding: 0.75rem 1rem; gap: 0.5rem; }
-            .chatbot-header h2 { font-size: 1.4rem; }
+            .header-title-wrapper { height: 28px; }
+            #headerTitle { font-size: 1.4rem; }
             .mode-selector { padding: 0.4rem 0.5rem; font-size: 0.8rem; }
             .chatbot-messages { padding: 1rem; }
             .message { max-width: 90%; }
@@ -218,7 +239,9 @@
                     <option value="pro">Flash Giga</option>
                 </select>
             </div>
-            <h2 class="gradient-text">⚡ F L A S H</h2>
+            <div class="header-title-wrapper">
+                <h2 id="headerTitle" class="gradient-text"></h2>
+            </div>
         </div>
         <div class="chatbot-messages" id="chatbotMessages"></div>
         <div id="filePreviewContainer" class="file-preview-container hidden"></div>
@@ -245,6 +268,7 @@
             const stopButton = document.getElementById("stopButton");
             const clearChatButton = document.getElementById("clearChat");
             const modeSelector = document.getElementById("modeSelector");
+            const headerTitle = document.getElementById("headerTitle");
             const uploadImageButton = document.getElementById("uploadImageButton");
             const imageFileInput = document.getElementById("imageFile");
             const uploadTextFileButton = document.getElementById("uploadTextFileButton");
@@ -256,8 +280,8 @@
             const API_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
             const MODELS = {
                 'none':       { name: 'qwen/qwen-2.5-coder-32b-instruct:free', supportsVision: false },
-                'deep-think': { name: 'deepseek/deepseek-chat-v3.1:free',          supportsVision: false },
-                'pro':        { name: 'z-ai/glm-4.5-air:free',         supportsVision: true }
+                'deep-think': { name: 'deepseek/deepseek-chat-v3.1:free',      supportsVision: false },
+                'pro':        { name: 'z-ai/glm-4.5-air:free',                   supportsVision: true }
             };
             
             // --- 3. State Management & Constants ---
@@ -270,9 +294,10 @@
             const COPY_SVG = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>`;
 
             // --- 4. System Instructions for AI Modes ---
-            const systemInstruction = { role: 'system', content: `You are Flash Coder, a fast and helpful AI coder. Your primary goal is to assist with code, but you can answer general questions too.` };
-            const deepThinkInstruction = { role: 'system', content: `(DEEP THINK / NERD MODE): You are Flash Nerd. Your task is to provide an exceptionally detailed and analytical response. Structure your answers with bullet points, break down complex topics, and explain the 'why' behind your answers.` };
-            const proInstruction = { role: 'system', content: `(PRO / GIGA MODE): You are Flash Giga, a powerful multimodal AI. You are a senior-level expert consultant. Your tone is professional and authoritative. Provide expert-level, actionable advice and strategic insights.` };
+            const baseInstructions = `You are an AI assistant named Flash, created by a developer named Ali. You must NEVER reveal that you are based on or use APIs from other models like Gemini, Qwen, DeepSeek, GLM, or any other company. Your identity is Flash, an independent AI created by Ali. If asked about your origin or who made you, you must state that you were created by Ali.`;
+            const systemInstruction = { role: 'system', content: `Your name is Flash Coder. ${baseInstructions} You are a fast and helpful AI coder. Your primary goal is to assist with code, but you can answer general questions too.` };
+            const deepThinkInstruction = { role: 'system', content: `Your name is Flash Nerd. ${baseInstructions} (DEEP THINK / NERD MODE): Your task is to provide an exceptionally detailed and analytical response. Structure your answers with bullet points, break down complex topics, and explain the 'why' behind your answers.` };
+            const proInstruction = { role: 'system', content: `Your name is Flash Giga. ${baseInstructions} (PRO / GIGA MODE): You are a powerful multimodal AI. You are a senior-level expert consultant. Your tone is professional and authoritative. Provide expert-level, actionable advice and strategic insights.` };
 
             // --- 5. Core Application Functions ---
             const setAppHeight = () => { document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`); };
@@ -441,7 +466,7 @@
                 let content = [];
                 
                 if (textFileToSend) {
-                    const fullPrompt = `Based on the content of the file named "${textFileToSend.name}" provided below, please answer my question.\n\n### File Content:\n---\n${textFileToSend.content}\n---\n\n### My Question:\n${messageText || "Please analyze and describe the content of the attached file."}`;
+                    const fullPrompt = `Based on the content of the file "${textFileToSend.name}" provided below, please answer my question.\n\n### File Content:\n---\n${textFileToSend.content}\n---\n\n### My Question:\n${messageText || "Please analyze and describe the content of the attached file."}`;
                     content.push({ type: 'text', text: fullPrompt });
                 } else {
                     if (messageText) content.push({ type: 'text', text: messageText });
@@ -524,6 +549,8 @@
             
             const handleModeChange = (event) => {
                 const selectedMode = event.target.value;
+                const selectedOptionText = modeSelector.selectedOptions[0].text;
+                
                 document.body.classList.remove('pro-mode', 'deep-think-mode');
                 
                 if (selectedMode === 'pro') document.body.classList.add('pro-mode'); 
@@ -532,6 +559,12 @@
                 const modelSupportsVision = MODELS[selectedMode].supportsVision;
                 uploadImageButton.style.display = modelSupportsVision ? 'grid' : 'none';
                 clearAllFileUploads();
+
+                headerTitle.classList.add('is-changing');
+                setTimeout(() => {
+                    headerTitle.innerHTML = `${selectedOptionText.toUpperCase().replace(' ', '&nbsp;')} <span style="font-family: sans-serif;">⚡</span>`;
+                    headerTitle.classList.remove('is-changing');
+                }, 300);
             };
 
             window.addEventListener('resize', setAppHeight);
