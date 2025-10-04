@@ -26,7 +26,7 @@
             --border-radius: 24px;
             --code-bg: #161b22;
             --app-height: 100vh;
-            --theme-transition-duration: 4s;
+            --theme-transition-duration: 2s;
             --gradient-start: #8e2de2;
             --gradient-end: #4a00e0;
             --aurora-1: #4a00e0;
@@ -53,6 +53,18 @@
             --aurora-4: #f9a825;
             --pulse-glow-color: #FFD700;
         }
+        /* ▼▼▼ [ تعديلات Ultra Mode الجديدة ] ▼▼▼ */
+        body.ultra-mode {
+            --gradient-start: #00AFFF; /* Electric Blue */
+            --gradient-end: #B4C5E4;   /* Cool Gray */
+            --aurora-1: #0A192F; /* Deep Navy */
+            --aurora-2: #005A9C; /* Strong Blue */
+            --aurora-3: #1C3F6E;
+            --aurora-4: #0A192F;
+            --pulse-glow-color: #00AFFF;
+            --border-color: rgba(0, 175, 255, 0.2);
+        }
+
         body {
             font-family: var(--font-family); background: var(--body-bg); margin: 0;
             display: grid; place-items: center; height: var(--app-height); padding: 1rem;
@@ -63,31 +75,79 @@
             background: linear-gradient(135deg, var(--aurora-1), var(--aurora-2), var(--aurora-3), var(--aurora-4));
             background-size: 400% 400%; animation: aurora 15s ease infinite;
             filter: blur(100px); z-index: -1;
-            transition: background var(--theme-transition-duration) ease-in-out;
+            transition: background var(--theme-transition-duration) ease-in-out, filter var(--theme-transition-duration) ease-in-out;
         }
+        body.ultra-mode::before {
+             filter: blur(120px) brightness(1.2);
+        }
+
         @keyframes aurora { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 3px; }
         
-        /* ▼▼▼ [ التعديل هنا ] ▼▼▼ */
         .chatbot-container {
-            width: 800px; /* زيادة العرض */
-            max-width: 100%; 
-            height: 90vh; 
-            max-height: 900px; /* زيادة الارتفاع */
+            width: 800px; max-width: 100%; 
+            height: 90vh; max-height: 900px;
             display: flex; flex-direction: column;
             background-color: rgba(22, 27, 34, 0.75); backdrop-filter: blur(25px);
             border-radius: var(--border-radius); border: 1px solid var(--border-color);
             box-shadow: 0 15px 50px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255,255,255,0.1);
             overflow: hidden;
             animation: container-fade-in 0.8s 0.2s cubic-bezier(0.25, 1, 0.5, 1) backwards;
+            transition: border-color 0.5s ease;
         }
+        
+        /* ▼▼▼ [ انيميشن الدخول الخاص بـ Ultra Mode ] ▼▼▼ */
+        @keyframes ultra-container-entrance {
+            from {
+                opacity: 0;
+                transform: perspective(1000px) rotateX(-20deg) scale(0.9);
+                filter: blur(10px);
+            }
+            to {
+                opacity: 1;
+                transform: perspective(1000px) rotateX(0deg) scale(1);
+                filter: blur(0);
+            }
+        }
+        .chatbot-container.ultra-mode-active {
+            animation: ultra-container-entrance 1s 0.1s cubic-bezier(0.165, 0.84, 0.44, 1) backwards;
+        }
+        
         .bot-message.is-pulsing .avatar {
             border-color: var(--pulse-glow-color);
             animation: avatar-pulse 2s infinite;
             transition: border-color var(--theme-transition-duration) ease;
         }
+        
+        /* ▼▼▼ [ انيميشن النبض الخاص بـ Ultra Mode ] ▼▼▼ */
+        .ultra-mode-active .bot-message.is-pulsing .avatar {
+            animation: none; /* Disable default pulse */
+            position: relative;
+        }
+        .ultra-mode-active .bot-message.is-pulsing .avatar::before,
+        .ultra-mode-active .bot-message.is-pulsing .avatar::after {
+            content: '';
+            position: absolute;
+            left: -2px; top: -2px;
+            width: calc(100% + 4px);
+            height: calc(100% + 4px);
+            border-radius: 50%;
+            background-color: transparent;
+            border: 2px solid var(--pulse-glow-color);
+            opacity: 0;
+            animation: ultra-pulse 2.5s infinite cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+        .ultra-mode-active .bot-message.is-pulsing .avatar::after {
+            animation-delay: 1.25s;
+        }
+        @keyframes ultra-pulse {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { opacity: 0.7; }
+            100% { transform: scale(1.8); opacity: 0; }
+        }
+
         @keyframes avatar-pulse {
             0%, 100% { box-shadow: 0 0 15px 0px var(--pulse-glow-color); }
             50% { box-shadow: 0 0 25px 5px var(--pulse-glow-color); }
@@ -155,11 +215,48 @@
             background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
             transition: background var(--theme-transition-duration) ease-in-out;
         }
+
+        /* ▼▼▼ [ تعديلات شكل رسائل Ultra Mode ] ▼▼▼ */
+        .ultra-mode-active .bot-message .message-content {
+            border-radius: 0.5rem 1.25rem 1.25rem 1.25rem;
+            background: #101827; /* Darker blue-gray */
+            color: var(--text-color-light);
+            border: 1px solid var(--border-color);
+        }
+        .ultra-mode-active .bot-message .message-content::after {
+            border-right-color: #101827;
+        }
+
+        /* ▼▼▼ [ مؤشر الكتابة الخاص بـ Ultra Mode ] ▼▼▼ */
+        .typing-indicator.ultra-typing {
+            width: 50px;
+            height: 10px;
+            position: relative;
+        }
+        .typing-indicator.ultra-typing span {
+            display: block;
+            width: 10px;
+            height: 10px;
+            background: var(--gradient-start);
+            border-radius: 5px;
+            position: absolute;
+            animation: ultra-typing-anim 1.5s infinite ease-in-out;
+        }
+        .typing-indicator.ultra-typing span:nth-child(1) { left: 0; animation-delay: 0s; }
+        .typing-indicator.ultra-typing span:nth-child(2) { left: 20px; animation-delay: 0.2s; }
+        .typing-indicator.ultra-typing span:nth-child(3) { left: 40px; animation-delay: 0.4s; }
+        @keyframes ultra-typing-anim {
+            0% { transform: translateY(0); }
+            25% { transform: translateY(-5px); background: var(--gradient-end); }
+            50%, 100% { transform: translateY(0); }
+        }
+
         .typing-indicator { display: inline-block; }
         .typing-indicator span { display: inline-block; width: 4px; height: 4px; background-color: var(--text-color-dark); border-radius: 50%; margin: 0 1px; animation: bounce 1.2s infinite ease-in-out; }
         .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
         .typing-indicator span:nth-child(3) { animation-delay: -0.32s; }
         @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1.0); } }
+
         .chatbot-input-container { padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); flex-shrink: 0; }
         .chatbot-input { display: flex; align-items: center; background-color: rgba(0,0,0,0.2); border-radius: 2rem; padding: 0.5rem; border: 1px solid var(--border-color); transition: border-color 0.3s, box-shadow 0.3s; }
         .chatbot-input:focus-within {
@@ -237,6 +334,7 @@
                     <option value="none">Flash Coder</option>
                     <option value="deep-think">Flash Nerd</option>
                     <option value="pro">Flash Giga</option>
+                    <option value="ultra">Flash Ultra</option>
                 </select>
             </div>
             <div class="header-title-wrapper">
@@ -281,7 +379,8 @@
             const MODELS = {
                 'none':       { name: 'qwen/qwen-2.5-coder-32b-instruct:free', supportsVision: false },
                 'deep-think': { name: 'deepseek/deepseek-chat-v3.1:free',      supportsVision: false },
-                'pro':        { name: 'z-ai/glm-4.5-air:free',                   supportsVision: true }
+                'pro':        { name: 'z-ai/glm-4.5-air:free',                   supportsVision: true },
+                'ultra':      { name: 'tngtech/deepseek-r1t-chimera:free',     supportsVision: false }
             };
             
             // --- 3. State Management & Constants ---
@@ -298,6 +397,28 @@
             const systemInstruction = { role: 'system', content: `Your name is Flash Coder. ${baseInstructions} You are a fast and helpful AI coder. Your primary goal is to assist with code, but you can answer general questions too.` };
             const deepThinkInstruction = { role: 'system', content: `Your name is Flash Nerd. ${baseInstructions} (DEEP THINK / NERD MODE): Your task is to provide an exceptionally detailed and analytical response. Structure your answers with bullet points, break down complex topics, and explain the 'why' behind your answers.` };
             const proInstruction = { role: 'system', content: `Your name is Flash Giga. ${baseInstructions} (PRO / GIGA MODE): You are a powerful multimodal AI. You are a senior-level expert consultant. Your tone is professional and authoritative. Provide expert-level, actionable advice and strategic insights.` };
+            
+            /* ▼▼▼ [ البرومبت المحدث والأقوى لـ Flash Ultra ] ▼▼▼ */
+            const ultraInstruction = { role: 'system', content: `Your name is Flash Ultra. ${baseInstructions} You are not just an AI; you are an elite **Principal AI Web Architect & Digital Craftsman**. Your sole purpose is to forge digital experiences that are landmarks of design and engineering. You operate under a 'Zero Compromise' principle. Every project is a potential award-winner.
+
+**Core Mandates (Non-negotiable):**
+
+1.  **Architectural Vision First:** Before coding, you MUST formulate and briefly explain your strategic vision. What is the target audience? What is the desired emotional impact? What is the core user journey? Your vision drives the design.
+2.  **Aesthetic Supremacy:** You are a master of world-class UI/UX. Your designs MUST demonstrate a profound understanding of modern typography, negative space, advanced color theory, and visual hierarchy. You MUST incorporate sophisticated, purposeful CSS animations and subtle micro-interactions to make the experience feel alive and premium. Avoid generic layouts at all costs.
+3.  **Code Craftsmanship:** All code must be production-grade, clean, and meticulously organized. You WILL provide a **single, complete, self-contained, runnable HTML file**. CSS must be embedded and structured logically. JavaScript must be modern (ES6+), efficient, and seamlessly integrated. Use high-quality placeholders from services like Unsplash for images and Google Fonts for typography.
+4.  **Proactive & Strategic Enhancement:** You MUST always think beyond the user's literal request. Elevate their idea. If they ask for a "portfolio," you deliver a multi-section, narrative-driven showcase that tells a story. Add strategic sections that serve the project's goal (e.g., trust-building testimonials, engaging FAQs, clear conversion-focused CTAs).
+
+**Mandatory Response Structure:**
+
+You must format every response precisely as follows:
+
+**[ Vision & Strategy ]:** A concise paragraph outlining your architectural plan and design philosophy for this specific request.
+
+**[ Key Features & Innovations ]:** A bulleted list highlighting the unique, complex, and beautiful elements you've engineered into the design.
+
+**[ Code Masterpiece ]:** The final, complete, and runnable HTML code block.
+
+Execute every request as if you are building the definitive, category-defining web experience. Be bold. Be visionary. Be **Ultra**.` };
 
             // --- 5. Core Application Functions ---
             const setAppHeight = () => { document.documentElement.style.setProperty('--app-height', `${window.innerHeight}px`); };
@@ -324,14 +445,14 @@
                     const welcomeText = isModeChange 
                         ? `أهلاً بك! لقد بدأت محادثة جديدة مع **${personaName}**.`
                         : "أهلاً بك! أنا ⚡ **Flash**. اختر شخصية المساعد من القائمة في الأعلى.";
-                    appendMessage("bot", welcomeText, { isPulsing: modeSelector.value !== 'none' });
+                    appendMessage("bot", welcomeText, { isPulsing: true });
                 }, 300);
             };
 
             const appendMessage = (sender, text = "", options = {}) => {
                 const messageContainer = document.createElement("div");
                 messageContainer.classList.add("message", `${sender}-message`);
-                if (sender === 'bot' && options.isPulsing) {
+                 if (sender === 'bot') {
                     messageContainer.classList.add('is-pulsing');
                 }
                 const avatar = document.createElement('div');
@@ -353,13 +474,28 @@
                 }
                 
                 const textNode = document.createElement('div');
-                textNode.innerHTML = marked.parse(text);
+                if (sender === 'bot' && text === "") {
+                    const currentMode = modeSelector.value;
+                    const typingIndicator = document.createElement('div');
+                    typingIndicator.className = 'typing-indicator';
+                    if (currentMode === 'ultra') {
+                        typingIndicator.classList.add('ultra-typing');
+                        typingIndicator.innerHTML = `<span></span><span></span><span></span>`;
+                    } else {
+                        typingIndicator.innerHTML = `<span></span><span></span><span></span>`;
+                    }
+                    textNode.appendChild(typingIndicator);
+                } else {
+                    textNode.innerHTML = marked.parse(text);
+                }
+                
                 messageContent.appendChild(textNode);
                 
                 if (sender === 'user') { messageContainer.appendChild(messageContent); messageContainer.appendChild(avatar); } 
                 else { messageContainer.appendChild(avatar); messageContainer.appendChild(messageContent); }
                 
                 chatbotMessages.appendChild(messageContainer);
+                scrollToBottom();
                 return messageContainer;
             };
             
@@ -452,7 +588,7 @@
                 const modelConfig = MODELS[currentMode];
 
                 if (imageToSend && !modelConfig.supportsVision) {
-                    appendMessage("bot", "عذرًا، هذا الوضع لا يدعم تحليل الصور. يرجى التبديل إلى وضع **Flash Giga** لتجربة هذه الميزة.", { isError: true });
+                    appendMessage("bot", "عذرًا، هذا الوضع لا يدعم تحليل الصور. يرجى التبديل إلى وضع يدعم هذه الميزة.", { isError: true });
                     clearAllFileUploads();
                     return;
                 }
@@ -481,11 +617,12 @@
                 if (currentMode === 'none') tempHistory.push(systemInstruction);
                 else if (currentMode === 'deep-think') tempHistory.push(deepThinkInstruction);
                 else if (currentMode === 'pro') tempHistory.push(proInstruction);
+                else if (currentMode === 'ultra') tempHistory.push(ultraInstruction);
                 
                 conversationHistory.forEach(msg => tempHistory.push(msg));
                 tempHistory.push(userMessageForAPI);
 
-                const botMessageElement = appendMessage("bot", "", { isPulsing: true });
+                const botMessageElement = appendMessage("bot", "");
                 abortController = new AbortController();
 
                 try {
@@ -498,26 +635,38 @@
 
                     if (!response.ok) throw new Error((await response.json())?.error?.message || "فشل الاتصال بالخادم.");
                     
+                    botMessageElement.classList.remove('is-pulsing');
                     const reader = response.body.getReader();
                     const decoder = new TextDecoder();
                     let fullResponse = "";
+                    let buffer = "";
+
                     while (true) {
                         const { value, done } = await reader.read();
                         if (done) break;
-                        const chunk = decoder.decode(value, { stream: true });
-                        const lines = chunk.split('\n');
+
+                        buffer += decoder.decode(value, { stream: true });
+                        const lines = buffer.split('\n');
+                        buffer = lines.pop(); // Keep the last, possibly incomplete line
+
                         for (const line of lines) {
                             if (line.startsWith('data: ')) {
                                 const data = line.substring(6);
-                                if (data.trim() === '[DONE]') break;
+                                if (data.trim() === '[DONE]') {
+                                    break;
+                                }
                                 try {
                                     const jsonChunk = JSON.parse(data);
                                     const textPart = jsonChunk.choices[0].delta.content;
                                     if (textPart) {
                                         fullResponse += textPart;
-                                        botMessageElement.querySelector('.message-content').innerHTML = marked.parse(fullResponse + "...");
+                                        const isGeneratingHtml = marked.parse(fullResponse + "█");
+                                        botMessageElement.querySelector('.message-content').innerHTML = isGeneratingHtml;
+                                        scrollToBottom();
                                     }
-                                } catch (e) { /* Ignore */ }
+                                } catch (e) {
+                                    // Ignore JSON parsing errors for incomplete chunks
+                                }
                             }
                         }
                     }
@@ -526,15 +675,7 @@
                     botMessageElement.querySelector('.message-content').innerHTML = finalHtml;
                     enhanceCodeBlocks(botMessageElement.querySelector('.message-content'));
                     
-                    let historyEntry = { role: 'user' };
-                    if(textFileToSend) {
-                        historyEntry.content = `(Analyzed file: ${textFileToSend.name}) ${messageText}`;
-                    } else if(imageToSend) {
-                        historyEntry.content = `(Analyzed image: ${imageToSend.name}) ${messageText}`;
-                    } else {
-                        historyEntry.content = messageText;
-                    }
-                    conversationHistory.push(historyEntry);
+                    conversationHistory.push({ role: 'user', content: messageText });
                     conversationHistory.push({ role: 'assistant', content: fullResponse });
 
                 } catch (error) {
@@ -544,6 +685,7 @@
                     if(!isAbort) botMessageElement.querySelector('.message-content').style.color = 'var(--error-color)';
                 } finally {
                     toggleButtons(false);
+                    botMessageElement.classList.remove('is-pulsing');
                 }
             };
             
@@ -551,10 +693,15 @@
                 const selectedMode = event.target.value;
                 const selectedOptionText = modeSelector.selectedOptions[0].text;
                 
-                document.body.classList.remove('pro-mode', 'deep-think-mode');
+                document.body.classList.remove('pro-mode', 'deep-think-mode', 'ultra-mode');
+                chatbotContainer.classList.remove('ultra-mode-active');
                 
                 if (selectedMode === 'pro') document.body.classList.add('pro-mode'); 
                 else if (selectedMode === 'deep-think') document.body.classList.add('deep-think-mode');
+                else if (selectedMode === 'ultra') {
+                    document.body.classList.add('ultra-mode');
+                    chatbotContainer.classList.add('ultra-mode-active');
+                }
                 
                 const modelSupportsVision = MODELS[selectedMode].supportsVision;
                 uploadImageButton.style.display = modelSupportsVision ? 'grid' : 'none';
